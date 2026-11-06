@@ -112,14 +112,14 @@ Pan <small id="ver"></small><span class="sp"></span><button id="bAy">⏰ iPhone<
 <button id="tT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3L2 6M19 3l3 3"/></svg>Tiempos</button>
 </nav>
 <div class="ov" id="ov" hidden><div>
-<h4>Alarmas en el Reloj del iPhone</h4>
-<label style="display:flex;gap:.5rem;align-items:center;margin:.3rem 0 .5rem"><input type="checkbox" id="ovIos" style="width:1.3rem;height:1.3rem"> Poner cada alarma también en el Reloj del iPhone</label>
-Así suenan aunque el móvil esté bloqueado. Usa el atajo <b>Alarma pan</b> (Recibir <b>Texto</b> → Obtener fechas de <b>Entrada de atajo</b> → Crear alarma para las <b>Fechas</b> que se llame <b>Entrada de atajo</b>). Cada vez se abre Atajos un momento: vuelve con «◀ Pan». Las alarmas sonadas se quedan apagadas en el Reloj.
+<h4>Temporizador del iPhone</h4>
+<label style="display:flex;gap:.5rem;align-items:center;margin:.3rem 0 .5rem"><input type="checkbox" id="ovIos" style="width:1.3rem;height:1.3rem"> Poner cada aviso también como temporizador del iPhone</label>
+Así suena aunque el móvil esté bloqueado. Usa el atajo <b>Alarma pan</b>: Recibir <b>Texto</b> → Obtener números de <b>Entrada de atajo</b> → Iniciar temporizador de <b>Números</b> minutos. Cada vez se abre Atajos un momento: vuelve con «◀ Pan».
 <button id="ovX">Hecho</button>
 </div></div>
 <script>
 "use strict";
-var VER="v1.02";
+var VER="v1.03";
 document.getElementById("ver").textContent=VER;
 var $=function(id){return document.getElementById(id)};
 var DEF={p:1500,hi:0,ag:70,sa:2,sh:0,ta:23,tn:7.5,hf:12,ct:27,sn:13};
@@ -174,10 +174,9 @@ function pantalla(on){try{if(on&&!lock&&navigator.wakeLock&&document.visibilityS
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){tdraw();if(E.run)pantalla(true)}});
 // ---- alarma en el Reloj del iPhone (atajo «Alarma pan»)
 function alarmaIOS(){if(!E.ios||!E.run)return;var F=fases(),i=E.run.t.length-1;if(i>=F.length-1||!F[i].al)return;
-  // nombres sin cifras para que Atajos no confunda la hora (p. ej. «Primer pliegue a las 19:45»)
-  var NOM={"Pliegue 1":"Primer pliegue","Pliegue 2":"Segundo pliegue","Pliegue 3":"Tercer pliegue","Preforma":"Preforma","Formado final":"Formado final","Quitar la tapa":"Quitar la tapa","Sacar del horno":"Sacar del horno"};
-  var ms=vence(F),txt=(NOM[F[i].sig]||"Pan")+" a las "+hh(ms);
-  setTimeout(function(){location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Alarma pan")+"&input=text&text="+encodeURIComponent(txt)},150)}
+  // el atajo recibe solo los minutos que faltan (p. ej. «45») e inicia un temporizador del Reloj
+  var mn=Math.max(1,Math.round((vence(F)-Date.now())/60000));
+  setTimeout(function(){location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Alarma pan")+"&input=text&text="+encodeURIComponent(String(mn))},150)}
 // ---- botones
 function btn(html,cls,fn){var b=document.createElement("button");b.innerHTML=html;if(cls)b.className=cls;b.onclick=fn;$("bts").appendChild(b)}
 function empezar(){audio();E.run={t:[Date.now()],apl:null,mute:false};guardar();pantalla(true);tdraw();alarmaIOS()}
