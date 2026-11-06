@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pan">
+<meta name="theme-color" content="#FAEEDA">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<title>Pan</title>
+<style>
+:root{--crust:#854F0B;--crustd:#633806;--crumb:#FBF6EC;--wheat:#FAEEDA;--line:#EFD9B4;--card:#fff;--ok:#3B6D11;--txt:#2C2C2A;--sec:#6b6a64;--mut:#9a9890;--red:#A32D2D;--redbg:#FCEBEB;--redln:#F09595}
+@media (prefers-color-scheme:dark){:root{--crust:#EF9F27;--crustd:#FAC775;--crumb:#1e1a12;--wheat:#3a2a10;--line:#5a4214;--card:#2a2418;--ok:#97C459;--txt:#F1EFE8;--sec:#c9c6bc;--mut:#8f8c84;--red:#F7C1C1;--redbg:#501313;--redln:#A32D2D}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:clamp(13px,2.15vh,19px)}
+html,body{height:100%;overflow:hidden;background:var(--crumb);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top)}
+header{flex:none;display:flex;align-items:center;gap:.5rem;padding:.55rem 1rem;background:var(--wheat);color:var(--crustd);border-bottom:1px solid var(--line);font-size:1.2rem;font-weight:600}
+header small{font-size:.7rem;font-weight:400;opacity:.8}
+header .sp{flex:1}
+header button{font-size:.8rem;background:none;border:1px solid var(--line);color:var(--crustd);border-radius:.5rem;padding:.2rem .55rem}
+main{flex:1;min-height:0;padding:.6rem .7rem;display:flex;flex-direction:column;gap:.5rem}
+.pg{flex:1;min-height:0;display:flex;flex-direction:column;gap:.5rem}
+.pg[hidden]{display:none}
+.c{background:var(--card);border:1px solid var(--line);border-radius:.8rem;padding:.35rem .8rem;display:flex;flex-direction:column;min-height:0}
+.c h3{flex:none;font-size:.85rem;color:var(--crust);font-weight:600;padding:.15rem 0}
+.r{flex:1;display:flex;justify-content:space-between;align-items:center;gap:.5rem;min-height:0}
+.r>span:first-child{color:var(--sec)}
+input{width:5rem;height:min(2.2rem,90%);font-size:1.05rem;text-align:right;padding:0 .5rem;background:var(--wheat);color:var(--crustd);border:1px solid var(--line);border-radius:.45rem;font-family:inherit}
+input:focus{outline:2px solid var(--crust)}
+.o{font-weight:600;color:var(--ok);font-size:1.1rem;font-variant-numeric:tabular-nums}
+nav{flex:none;display:flex;border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;height:3.6rem;border:none;background:none;color:var(--sec);font-size:.9rem;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem}
+nav button svg{width:1.4rem;height:1.4rem}
+nav button.on{color:var(--crustd);background:var(--wheat);box-shadow:inset 0 3px 0 var(--crust)}
+.big{flex:none;background:var(--wheat);border:1px solid var(--line);border-radius:.9rem;padding:.6rem .8rem;text-align:center;color:var(--crustd)}
+.big.al{background:var(--redbg);border-color:var(--redln);color:var(--red)}
+.big.ap{background:var(--card)}
+.lbl{font-size:.8rem;opacity:.85}
+.st{font-size:min(1.5rem,4vh);font-weight:600}
+.cd{font-size:min(2.9rem,7vh);font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.bts{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.5rem}
+.bts button{flex:1 1 40%;height:min(2.9rem,6.5vh);font-size:1rem;font-family:inherit;border-radius:.6rem;border:1px solid var(--line);background:var(--card);color:var(--txt)}
+.bts button.pri{background:var(--crust);border-color:var(--crust);color:#fff}
+@media (prefers-color-scheme:dark){.bts button.pri{color:#2a1a02}}
+.bts button.stop{flex-basis:100%;background:#E24B4A;border-color:#E24B4A;color:#fff}
+.bts button.ios{flex-basis:100%;border-style:dashed;border-color:var(--crust);color:var(--crustd);background:transparent}
+.hz{flex:none;flex-direction:row;align-items:center;justify-content:space-between;padding:.35rem .8rem}
+.hz input{width:3.4rem}
+.hz label{color:var(--sec);display:flex;align-items:center;gap:.35rem}
+.hz b{color:var(--crust);font-size:.85rem}
+.ls{flex:1}
+.l{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 6.2rem 3.6rem;gap:.3rem;align-items:center;min-height:0;font-size:.92rem}
+.l span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.l span:nth-child(2),.l span:nth-child(3){text-align:right;font-variant-numeric:tabular-nums}
+.l span:nth-child(2){color:var(--sec)}
+.l.h{flex:.7;font-size:.72rem;color:var(--mut)}.l.h span{color:var(--mut)}
+.l.d,.l.d span{color:var(--mut);text-decoration:line-through}
+.l.cur,.l.cur span{font-weight:600;color:var(--crust)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:9}
+.ov[hidden]{display:none}
+.ov div{background:var(--card);border-radius:1rem;padding:1rem 1.1rem;max-width:26rem;font-size:.95rem;line-height:1.45}
+.ov h4{color:var(--crust);margin-bottom:.4rem}
+.ov ol{padding-left:1.2rem;margin:.4rem 0}
+.ov button{margin-top:.6rem;width:100%;height:2.6rem;border-radius:.6rem;border:none;background:var(--crust);color:#fff;font-size:1rem}
+</style>
+</head>
+<body>
+<header>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="13" rx="10" ry="6.5"/><path d="M8 10.5l1.5 4M12 10.5l1.5 4M16 10.5l1.5 4"/></svg>
+Pan <small id="ver"></small><span class="sp"></span><button id="bAy" hidden>Atajo</button>
+</header>
+<main>
+<section class="pg" id="pC">
+<div class="c" style="flex:6"><h3>Masa</h3>
+<div class="r"><span>Peso total (g)</span><input id="p" inputmode="decimal"></div>
+<div class="r"><span>Harina integral (%)</span><input id="hi" inputmode="decimal"></div>
+<div class="r"><span>Hidratación (%)</span><input id="ag" inputmode="decimal"></div>
+<div class="r"><span>Sal (%)</span><input id="sa" inputmode="decimal"></div>
+<div class="r"><span>Masa madre (% de la subida)</span><input id="sh" inputmode="decimal"></div>
+</div>
+<div class="c" style="flex:7"><h3>Pesar y echar</h3>
+<div class="r"><span>Harina blanca</span><span class="o" id="oHb"></span></div>
+<div class="r"><span>Harina integral</span><span class="o" id="oHi"></span></div>
+<div class="r"><span>Agua</span><span class="o" id="oAg"></span></div>
+<div class="r"><span>Sal</span><span class="o" id="oSa"></span></div>
+<div class="r"><span>Levadura seca</span><span class="o" id="oLv"></span></div>
+<div class="r"><span>Masa madre <small style="color:var(--mut)">(al 100 %)</small></span><span class="o" id="oMm"></span></div>
+</div>
+<div class="c" style="flex:4"><h3>Tu nevera</h3>
+<div class="r"><span>Temperatura ambiente (°C)</span><input id="ta" inputmode="decimal"></div>
+<div class="r"><span>Temperatura nevera (°C)</span><input id="tn" inputmode="decimal"></div>
+<div class="r"><span>Horas en frío</span><input id="hf" inputmode="decimal"></div>
+</div>
+</section>
+<section class="pg" id="pT" hidden>
+<div class="big" id="big">
+<div class="lbl" id="l1"></div>
+<div class="st" id="st"></div>
+<div class="cd" id="cd"></div>
+<div class="lbl" id="at"></div>
+<div class="bts" id="bts"></div>
+</div>
+<div class="c hz"><b>Horno</b><label>Con tapa <input id="ct" inputmode="numeric"> min</label><label>Sin tapa <input id="sn" inputmode="numeric"> min</label></div>
+<div class="c ls" id="ls"></div>
+</section>
+</main>
+<nav>
+<button id="tC" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M5 21h14l-2-10H7z"/><circle cx="12" cy="8" r="2"/></svg>Cantidades</button>
+<button id="tT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3L2 6M19 3l3 3"/></svg>Tiempos</button>
+</nav>
+<div class="ov" id="ov" hidden><div>
+<h4>Atajo «Alarma pan» (solo una vez)</h4>
+<ol>
+<li>Abre la app <b>Atajos</b> y pulsa <b>＋</b>.</li>
+<li>Arriba, ponle de nombre <b>Alarma pan</b> (exacto).</li>
+<li>Añade la acción <b>Obtener fechas de la entrada</b>, con la <b>Entrada del atajo</b>.</li>
+<li>Añade la acción <b>Crear alarma</b>: hora = <b>Fechas</b>, etiqueta = <b>Sacar el pan</b>. Desmarca «Mostrar al ejecutar».</li>
+<li>En el ⓘ del atajo, si te lo pide, deja que reciba <b>Texto</b>.</li>
+</ol>
+Después, en la app, el botón «Poner alarma del iPhone» lo hace solo.
+<button id="ovX">Entendido</button>
+</div></div>
+<script>
+"use strict";
+var VER="v1.00";
+document.getElementById("ver").textContent=VER;
+var $=function(id){return document.getElementById(id)};
+var DEF={p:1500,hi:0,ag:70,sa:2,sh:0,ta:23,tn:7.5,hf:12,ct:27,sn:13};
+var K="pan_datos_v1",E;
+try{E=JSON.parse(localStorage.getItem(K))||{}}catch(e){E={}}
+if(!E.v)E.v={};
+function guardar(){try{localStorage.setItem(K,JSON.stringify(E))}catch(e){}}
+Object.keys(DEF).forEach(function(k){var el=$(k);el.value=(E.v[k]!=null?E.v[k]:DEF[k]);
+  el.addEventListener("input",function(){E.v[k]=el.value;guardar();cant();tdraw()});
+  el.addEventListener("focus",function(){setTimeout(function(){el.select()},0)})});
+function v(id){var x=parseFloat(String($(id).value||"0").replace(",","."));return isFinite(x)?x:0}
+function g(x,d){return Math.max(0,x).toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d})+" g"}
+function hh(ms){var d=new Date(ms);return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
+function mins(m){m=Math.round(m);if(m<=0)return "—";return m>=60?Math.floor(m/60)+" h"+(m%60?" "+m%60+" min":""):m+" min"}
+function receta(){
+  var P=v("p"),HI=v("hi"),AG=v("ag"),SA=v("sa"),S=Math.min(100,Math.max(0,v("sh")))/100,TA=v("ta"),TN=v("tn"),HF=v("hf");
+  var rec=8.4937*Math.pow((3*Math.pow(2,(TA-20)/10)+HF/Math.pow(2,(20-TN)/10))*2.8079,-1.3913);
+  var LV=rec*(1-S);                       // % levadura seca sobre harina
+  var H=P/(1+AG/100+SA/100+LV/100);       // harina total (incluye la de la masa madre)
+  var mm=H*rec*2*S/100;                   // 100 % de masa madre ≈ rec × 200 % sobre harina
+  return {hb:(H-mm/2)*(1-HI/100),hi:(H-mm/2)*HI/100,ag:H*AG/100-mm/2,sa:H*SA/100,lv:H*LV/100,mm:mm};
+}
+function cant(){var r=receta();$("oHb").textContent=g(r.hb,1);$("oHi").textContent=g(r.hi,1);$("oAg").textContent=g(r.ag,1);
+  $("oSa").textContent=g(r.sa,1);$("oLv").textContent=g(r.lv,2);$("oMm").textContent=g(r.mm,0)}
+// ---- pasos (minutos desde el paso anterior)
+function pasos(){return [["Amasado",0],["Pliegue 1",45],["Pliegue 2",45],["Pliegue 3",45],["Preforma",40],["Formado final",15],["A la nevera",5],
+  ["Sacar el pan",Math.max(0,v("hf")*60-25)],["Hornear",25],["Quitar la tapa",v("ct")],["Sacar del horno",v("sn")]]}
+var NEVERA=6;
+// E.run = {t:[ms de cada paso hecho], apl: ms o null, mute: bool, ios: bool}
+function vence(S){var R=E.run,i=R.t.length-1;if(R.apl)return R.apl;return R.t[i]+S[i+1][1]*60000}
+// ---- sonido
+var ctx=null,beepT=null;
+function audio(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
+  try{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state!=="running")ctx.resume()}catch(e){}}
+function beep(){if(!ctx)return;try{var t=ctx.currentTime;[0,0.18].forEach(function(dt){var o=ctx.createOscillator(),gn=ctx.createGain();o.type="square";o.frequency.value=1000;o.connect(gn);gn.connect(ctx.destination);
+  gn.gain.setValueAtTime(0.0001,t+dt);gn.gain.exponentialRampToValueAtTime(0.35,t+dt+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,t+dt+0.14);o.start(t+dt);o.stop(t+dt+0.15)})}catch(e){}}
+function sonar(on){if(on&&!beepT){audio();beep();beepT=setInterval(beep,700)}if(!on&&beepT){clearInterval(beepT);beepT=null}}
+document.addEventListener("touchstart",function(){if(ctx&&ctx.state!=="running")ctx.resume()},{passive:true});
+// ---- pantalla encendida
+var lock=null;
+function pantalla(on){try{if(on&&!lock&&navigator.wakeLock&&document.visibilityState==="visible")navigator.wakeLock.request("screen").then(function(l){lock=l;l.addEventListener("release",function(){lock=null})}).catch(function(){});
+  if(!on&&lock){lock.release();lock=null}}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){tdraw();if(E.run)pantalla(true)}});
+// ---- botones
+function btn(html,cls,fn){var b=document.createElement("button");b.innerHTML=html;if(cls)b.className=cls;b.onclick=fn;$("bts").appendChild(b)}
+function empezar(){audio();E.run={t:[Date.now()],apl:null,mute:false,ios:false};guardar();pantalla(true);tdraw()}
+function seguir(){audio();var R=E.run;R.t.push(Date.now());R.apl=null;R.mute=false;guardar();tdraw()}
+function aplazar(){audio();E.run.apl=Date.now()+5*60000;E.run.mute=false;guardar();tdraw()}
+function parar(){E.run.mute=true;guardar();tdraw()}
+function terminar(){if(!confirm("¿Parar el proceso y empezar de nuevo?"))return;E.run=null;guardar();sonar(false);pantalla(false);tdraw()}
+function alarmaIOS(ms){E.run.ios=true;guardar();
+  location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Alarma pan")+"&input=text&text="+encodeURIComponent(hh(ms));setTimeout(tdraw,300)}
+$("bAy").onclick=function(){$("ov").hidden=false};$("ovX").onclick=function(){$("ov").hidden=true};
+// ---- pintar Tiempos
+var ultimo="";
+function tdraw(){
+  var S=pasos(),R=E.run,now=Date.now(),html="";
+  $("bAy").hidden=!(R&&R.t.length-1===NEVERA)&&!(!R);
+  if(!R){sonar(false);$("big").className="big";$("l1").textContent="Listo para empezar";$("st").textContent="Amasado";$("cd").textContent="";
+    $("at").textContent="Pulsa cuando empieces a amasar";
+    if(ultimo!=="ini"){$("bts").innerHTML="";btn("▶ Empezar ahora","pri",empezar);ultimo="ini"}}
+  else{
+    var i=R.t.length-1,fin=i>=S.length-1;
+    if(fin){sonar(false);pantalla(false);$("big").className="big";$("l1").textContent="";$("st").textContent="Pan terminado";$("cd").textContent="";$("at").textContent="¡Que aproveche!";
+      if(ultimo!=="fin"){$("bts").innerHTML="";btn("Empezar otro","",function(){E.run=null;guardar();tdraw()});ultimo="fin"}}
+    else{
+      var due=vence(S),r=due-now,al=r<=0;sonar(al&&!R.mute);
+      $("big").className="big"+(al?" al":R.apl?" ap":"");
+      $("l1").textContent=al?"Ahora toca":R.apl?"Aplazado · siguiente paso":"Siguiente paso";
+      $("st").textContent=S[i+1][0];
+      if(al)$("cd").textContent="¡Ya!";
+      else{var s=Math.ceil(r/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sg=s%60;$("cd").textContent=(h?h+":"+("0"+m).slice(-2):m)+":"+("0"+sg).slice(-2)}
+      $("at").textContent="a las "+hh(due)+(al&&!R.mute?" · sonando":"");
+      var clave=[i,al,R.mute,!!R.apl,R.ios,hh(due)].join("|");
+      if(clave!==ultimo){ultimo=clave;$("bts").innerHTML="";
+        if(al&&!R.mute)btn("🔕 Parar alarma","stop",parar);
+        if(i===NEVERA&&!al)btn(R.ios?"✓ Alarma del iPhone puesta (volver a ponerla)":"⏰ Poner alarma del iPhone a las "+hh(due),"ios",function(){alarmaIOS(vence(pasos()))});
+        btn("Seguir →","pri",seguir);btn("Aplazar 5 min","",aplazar)}
+    }
+  }
+  // lista
+  var t=R?null:now,prev=null;
+  html='<div class="l h"><span>Paso</span><span>Minutos</span><span>Hora</span></div>';
+  for(var k=0;k<S.length;k++){var tm,cl="";
+    if(R&&k<R.t.length){tm=R.t[k];cl=" d"}
+    else if(R&&k===R.t.length){tm=vence(S);cl=" cur";t=tm}
+    else{t=(t==null?now:t)+(k===0?0:S[k][1]*60000);tm=t}
+    var d=prev==null?0:(tm-prev)/60000;prev=tm;
+    html+='<div class="l'+cl+'"><span>'+S[k][0]+'</span><span>'+mins(d)+'</span><span>'+hh(tm)+'</span></div>'}
+  html+='<div class="l h" style="flex:.8"><span></span><span></span><span>'+(R?'<a href="#" id="bFin" style="color:var(--mut)">Parar</a>':'')+'</span></div>';
+  if($("ls").innerHTML!==html){$("ls").innerHTML=html;var bf=$("bFin");if(bf)bf.onclick=function(e){e.preventDefault();terminar()}}
+}
+// ---- pestañas
+function tab(t){E.tab=t;guardar();$("pC").hidden=t!=="C";$("pT").hidden=t!=="T";$("tC").className=t==="C"?"on":"";$("tT").className=t==="T"?"on":""}
+$("tC").onclick=function(){tab("C")};$("tT").onclick=function(){tab("T")};
+tab(E.run?"T":(E.tab||"C"));
+cant();tdraw();if(E.run)pantalla(true);
+setInterval(tdraw,250);
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
+</script>
+</body>
+</html>
