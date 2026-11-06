@@ -70,7 +70,7 @@ nav button.on{color:var(--crustd);background:var(--wheat);box-shadow:inset 0 3px
 <body>
 <header>
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="13" rx="10" ry="6.5"/><path d="M8 10.5l1.5 4M12 10.5l1.5 4M16 10.5l1.5 4"/></svg>
-Pan <small id="ver"></small><span class="sp"></span><button id="bAy" hidden>Atajo</button>
+Pan <small id="ver"></small><span class="sp"></span><button id="bAy">⏰ iPhone</button>
 </header>
 <main>
 <section class="pg" id="pC">
@@ -112,20 +112,14 @@ Pan <small id="ver"></small><span class="sp"></span><button id="bAy" hidden>Ataj
 <button id="tT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3L2 6M19 3l3 3"/></svg>Tiempos</button>
 </nav>
 <div class="ov" id="ov" hidden><div>
-<h4>Atajo «Alarma pan» (solo una vez)</h4>
-<ol>
-<li>Abre la app <b>Atajos</b> y pulsa <b>＋</b>.</li>
-<li>Arriba, ponle de nombre <b>Alarma pan</b> (exacto).</li>
-<li>Añade la acción <b>Obtener fechas de la entrada</b>, con la <b>Entrada del atajo</b>.</li>
-<li>Añade la acción <b>Crear alarma</b>: hora = <b>Fechas</b>, etiqueta = <b>Sacar el pan</b>. Desmarca «Mostrar al ejecutar».</li>
-<li>En el ⓘ del atajo, si te lo pide, deja que reciba <b>Texto</b>.</li>
-</ol>
-Después, en la app, el botón «Poner alarma del iPhone» lo hace solo.
-<button id="ovX">Entendido</button>
+<h4>Alarmas en el Reloj del iPhone</h4>
+<label style="display:flex;gap:.5rem;align-items:center;margin:.3rem 0 .5rem"><input type="checkbox" id="ovIos" style="width:1.3rem;height:1.3rem"> Poner cada alarma también en el Reloj del iPhone</label>
+Así suenan aunque el móvil esté bloqueado. Usa el atajo <b>Alarma pan</b> (Recibir <b>Texto</b> → Obtener fechas de <b>Entrada de atajo</b> → Crear alarma para las <b>Fechas</b>). Cada vez se abre Atajos un momento: vuelve con «◀ Pan». Las alarmas sonadas se quedan apagadas en el Reloj.
+<button id="ovX">Hecho</button>
 </div></div>
 <script>
 "use strict";
-var VER="v1.00";
+var VER="v1.01";
 document.getElementById("ver").textContent=VER;
 var $=function(id){return document.getElementById(id)};
 var DEF={p:1500,hi:0,ag:70,sa:2,sh:0,ta:23,tn:7.5,hf:12,ct:27,sn:13};
@@ -150,13 +144,22 @@ function receta(){
 }
 function cant(){var r=receta();$("oHb").textContent=g(r.hb,1);$("oHi").textContent=g(r.hi,1);$("oAg").textContent=g(r.ag,1);
   $("oSa").textContent=g(r.sa,1);$("oLv").textContent=g(r.lv,2);$("oMm").textContent=g(r.mm,0)}
-// ---- pasos (minutos desde el paso anterior)
-function pasos(){return [["Amasado",0],["Pliegue 1",45],["Pliegue 2",45],["Pliegue 3",45],["Preforma",40],["Formado final",15],["A la nevera",5],
-  ["Sacar el pan",Math.max(0,v("hf")*60-25)],["Hornear",25],["Quitar la tapa",v("ct")],["Sacar del horno",v("sn")]]}
-var NEVERA=6;
-// E.run = {t:[ms de cada paso hecho], apl: ms o null, mute: bool, ios: bool}
-function vence(S){var R=E.run,i=R.t.length-1;if(R.apl)return R.apl;return R.t[i]+S[i+1][1]*60000}
-// ---- sonido
+// ---- fases: cada botón dice lo que acabas de hacer; el tiempo cuenta desde que lo pulsas
+function fases(){return [
+  {hecho:"Amasado",sig:"Pliegue 1",min:45,al:true,boton:"Pliegue 1 hecho"},
+  {hecho:"Pliegue 1",sig:"Pliegue 2",min:45,al:true,boton:"Pliegue 2 hecho"},
+  {hecho:"Pliegue 2",sig:"Pliegue 3",min:45,al:true,boton:"Pliegue 3 hecho"},
+  {hecho:"Pliegue 3",sig:"Preforma",min:45,al:true,boton:"Preforma hecha"},
+  {hecho:"Preforma",sig:"Formado final",min:15,al:true,boton:"❄ Formado y a la nevera"},
+  {hecho:"A la nevera",sig:"Sacar de la nevera",min:Math.max(0,v("hf")*60-25),al:false,boton:"🔥 Al horno"},
+  {hecho:"Al horno",sig:"Quitar la tapa",min:v("ct"),al:true,boton:"Tapa quitada"},
+  {hecho:"Tapa quitada",sig:"Sacar del horno",min:v("sn"),al:true,boton:"Pan sacado"},
+  {hecho:"Pan sacado"}]}
+var NEVERA=5;
+if(E.ios==null)E.ios=true;
+// E.run = {t:[ms de cada botón pulsado], apl: ms o null, mute: bool}
+function vence(F){var R=E.run,i=R.t.length-1;if(R.apl)return R.apl;return R.t[i]+F[i].min*60000}
+// ---- sonido de la app (solo suena con la app abierta)
 var ctx=null,beepT=null;
 function audio(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
   try{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state!=="running")ctx.resume()}catch(e){}}
@@ -169,55 +172,62 @@ var lock=null;
 function pantalla(on){try{if(on&&!lock&&navigator.wakeLock&&document.visibilityState==="visible")navigator.wakeLock.request("screen").then(function(l){lock=l;l.addEventListener("release",function(){lock=null})}).catch(function(){});
   if(!on&&lock){lock.release();lock=null}}catch(e){}}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){tdraw();if(E.run)pantalla(true)}});
+// ---- alarma en el Reloj del iPhone (atajo «Alarma pan»)
+function alarmaIOS(){if(!E.ios||!E.run)return;var F=fases(),i=E.run.t.length-1;if(i>=F.length-1||!F[i].al)return;
+  var ms=vence(F);setTimeout(function(){location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Alarma pan")+"&input=text&text="+encodeURIComponent(hh(ms))},150)}
 // ---- botones
 function btn(html,cls,fn){var b=document.createElement("button");b.innerHTML=html;if(cls)b.className=cls;b.onclick=fn;$("bts").appendChild(b)}
-function empezar(){audio();E.run={t:[Date.now()],apl:null,mute:false,ios:false};guardar();pantalla(true);tdraw()}
-function seguir(){audio();var R=E.run;R.t.push(Date.now());R.apl=null;R.mute=false;guardar();tdraw()}
-function aplazar(){audio();E.run.apl=Date.now()+5*60000;E.run.mute=false;guardar();tdraw()}
+function empezar(){audio();E.run={t:[Date.now()],apl:null,mute:false};guardar();pantalla(true);tdraw();alarmaIOS()}
+function seguir(){audio();var R=E.run;R.t.push(Date.now());R.apl=null;R.mute=false;guardar();tdraw();alarmaIOS()}
+function aplazar(){audio();E.run.apl=Date.now()+5*60000;E.run.mute=false;guardar();tdraw();alarmaIOS()}
 function parar(){E.run.mute=true;guardar();tdraw()}
-function terminar(){if(!confirm("¿Parar el proceso y empezar de nuevo?"))return;E.run=null;guardar();sonar(false);pantalla(false);tdraw()}
-function alarmaIOS(ms){E.run.ios=true;guardar();
-  location.href="shortcuts://run-shortcut?name="+encodeURIComponent("Alarma pan")+"&input=text&text="+encodeURIComponent(hh(ms));setTimeout(tdraw,300)}
-$("bAy").onclick=function(){$("ov").hidden=false};$("ovX").onclick=function(){$("ov").hidden=true};
+function terminar(){if(!confirm("¿Parar el proceso y empezar de nuevo?"))return;E.run=null;guardar();sonar(false);pantalla(false);ultimo="";tdraw()}
+$("bAy").onclick=function(){$("ovIos").checked=!!E.ios;$("ov").hidden=false};
+$("ovX").onclick=function(){E.ios=$("ovIos").checked;guardar();$("ov").hidden=true;pintarIos()};
+function pintarIos(){$("bAy").textContent=E.ios?"⏰ iPhone":"⏰ iPhone no"}
 // ---- pintar Tiempos
 var ultimo="";
 function tdraw(){
-  var S=pasos(),R=E.run,now=Date.now(),html="";
-  $("bAy").hidden=!(R&&R.t.length-1===NEVERA)&&!(!R);
-  if(!R){sonar(false);$("big").className="big";$("l1").textContent="Listo para empezar";$("st").textContent="Amasado";$("cd").textContent="";
-    $("at").textContent="Pulsa cuando empieces a amasar";
-    if(ultimo!=="ini"){$("bts").innerHTML="";btn("▶ Empezar ahora","pri",empezar);ultimo="ini"}}
+  var F=fases(),R=E.run,now=Date.now(),html="";
+  if(!R){sonar(false);$("big").className="big";$("l1").textContent="Listo para empezar";$("st").textContent="Amasa";$("cd").textContent="";
+    $("at").textContent="Pulsa cuando termines de amasar";
+    if(ultimo!=="ini"){$("bts").innerHTML="";btn("▶ He terminado de amasar","pri",empezar);ultimo="ini"}}
   else{
-    var i=R.t.length-1,fin=i>=S.length-1;
+    var i=R.t.length-1,fin=i>=F.length-1;
     if(fin){sonar(false);pantalla(false);$("big").className="big";$("l1").textContent="";$("st").textContent="Pan terminado";$("cd").textContent="";$("at").textContent="¡Que aproveche!";
-      if(ultimo!=="fin"){$("bts").innerHTML="";btn("Empezar otro","",function(){E.run=null;guardar();tdraw()});ultimo="fin"}}
+      if(ultimo!=="fin"){$("bts").innerHTML="";btn("Empezar otro","",function(){E.run=null;guardar();ultimo="";tdraw()});ultimo="fin"}}
     else{
-      var due=vence(S),r=due-now,al=r<=0;sonar(al&&!R.mute);
-      $("big").className="big"+(al?" al":R.apl?" ap":"");
-      $("l1").textContent=al?"Ahora toca":R.apl?"Aplazado · siguiente paso":"Siguiente paso";
-      $("st").textContent=S[i+1][0];
-      if(al)$("cd").textContent="¡Ya!";
+      var f=F[i],due=vence(F),r=due-now,al=r<=0,suena=al&&f.al&&!R.mute;sonar(suena);
+      $("big").className="big"+(al&&f.al?" al":R.apl?" ap":"");
+      $("l1").textContent=al?"Ahora toca":R.apl?"Aplazado · siguiente":"Siguiente";
+      $("st").textContent=f.sig;
+      if(al)$("cd").textContent=f.al?"¡Ya!":"Ya puedes";
       else{var s=Math.ceil(r/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sg=s%60;$("cd").textContent=(h?h+":"+("0"+m).slice(-2):m)+":"+("0"+sg).slice(-2)}
-      $("at").textContent="a las "+hh(due)+(al&&!R.mute?" · sonando":"");
-      var clave=[i,al,R.mute,!!R.apl,R.ios,hh(due)].join("|");
+      if(i===NEVERA){var horno=due+25*60000;$("at").textContent="Encender el horno "+hh(horno-50*60000)+" · sacar "+hh(due)+" · hornear "+hh(horno)}
+      else $("at").textContent="a las "+hh(due)+(suena?" · sonando":"");
+      var clave=[i,al,R.mute,!!R.apl,hh(due)].join("|");
       if(clave!==ultimo){ultimo=clave;$("bts").innerHTML="";
-        if(al&&!R.mute)btn("🔕 Parar alarma","stop",parar);
-        if(i===NEVERA&&!al)btn(R.ios?"✓ Alarma del iPhone puesta (volver a ponerla)":"⏰ Poner alarma del iPhone a las "+hh(due),"ios",function(){alarmaIOS(vence(pasos()))});
-        btn("Seguir →","pri",seguir);btn("Aplazar 5 min","",aplazar)}
+        if(suena)btn("🔕 Parar alarma","stop",parar);
+        btn(f.boton,"pri",seguir);
+        if(f.al)btn("Aplazar 5 min","",aplazar)}
     }
   }
-  // lista
-  var t=R?null:now,prev=null;
+  // lista: Paso · Minutos · Hora
+  var filas=[],t;
+  if(R){for(var k=0;k<R.t.length;k++)filas.push([F[k].hecho,R.t[k],"d"]);
+    if(R.t.length<F.length){t=vence(F);filas.push([F[R.t.length-1].sig,t,"cur"]);
+      for(var k2=R.t.length;k2<F.length-1;k2++){t+=F[k2].min*60000;filas.push([F[k2].sig,t,""])}}}
+  else{t=now;filas.push(["Fin del amasado",t,""]);for(var k3=0;k3<F.length-1;k3++){t+=F[k3].min*60000;filas.push([F[k3].sig,t,""])}}
+  // tras «Sacar de la nevera» va «Al horno» 25 min después (si aún no se ha metido)
+  for(var q=0;q<filas.length;q++)if(filas[q][0]==="Sacar de la nevera"&&!(filas[q+1]&&filas[q+1][0]==="Al horno")){
+    for(var q2=q+1;q2<filas.length;q2++)filas[q2][1]+=25*60000;filas.splice(q+1,0,["Al horno",filas[q][1]+25*60000,""]);break}
   html='<div class="l h"><span>Paso</span><span>Minutos</span><span>Hora</span></div>';
-  for(var k=0;k<S.length;k++){var tm,cl="";
-    if(R&&k<R.t.length){tm=R.t[k];cl=" d"}
-    else if(R&&k===R.t.length){tm=vence(S);cl=" cur";t=tm}
-    else{t=(t==null?now:t)+(k===0?0:S[k][1]*60000);tm=t}
-    var d=prev==null?0:(tm-prev)/60000;prev=tm;
-    html+='<div class="l'+cl+'"><span>'+S[k][0]+'</span><span>'+mins(d)+'</span><span>'+hh(tm)+'</span></div>'}
+  var prev=null;filas.forEach(function(x){var d=prev==null?0:(x[1]-prev)/60000;prev=x[1];
+    html+='<div class="l'+(x[2]?" "+x[2]:"")+'"><span>'+x[0]+'</span><span>'+mins(d)+'</span><span>'+hh(x[1])+'</span></div>'});
   html+='<div class="l h" style="flex:.8"><span></span><span></span><span>'+(R?'<a href="#" id="bFin" style="color:var(--mut)">Parar</a>':'')+'</span></div>';
   if($("ls").innerHTML!==html){$("ls").innerHTML=html;var bf=$("bFin");if(bf)bf.onclick=function(e){e.preventDefault();terminar()}}
 }
+pintarIos();
 // ---- pestañas
 function tab(t){E.tab=t;guardar();$("pC").hidden=t!=="C";$("pT").hidden=t!=="T";$("tC").className=t==="C"?"on":"";$("tT").className=t==="T"?"on":""}
 $("tC").onclick=function(){tab("C")};$("tT").onclick=function(){tab("T")};
